@@ -21,7 +21,15 @@ search_index_model = SearchIndexModel(
         "numDimensions": 1024,
         "path": "embedding",
         "similarity": "cosine"
-      }
+      }, 
+      {
+                "type": "filter",
+                "path": "createdTime"
+            },
+            {
+                "type": "filter",
+                "path": "program"
+            }
     ]
   },
   name = index_name,

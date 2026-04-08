@@ -22,9 +22,19 @@ if st.button("Ask", type="primary"):
     if not question.strip():
         st.warning("Please enter a question.")
     else:
+        with st.spinner("Parsing your question..."):
+            # Extract intent first so we can show it
+            intent = chatbot.intent_agent.extract(question)
+
+        # Show detected filters so user can verify
+        with st.expander("🔍 Filters detected from your question"):
+            st.write(f"📅 **Date range:** Last {intent.days} days")
+            st.write(f"🎫 **Tickets to fetch:** {intent.limit}")
+            st.write(f"📄 **Output type:** {intent.summary_type}")
+
         with st.spinner("Searching tickets and generating answer..."):
-            answer = chatbot.ask(question)
-        
+            answer, _ = chatbot.ask(question)
+
         st.subheader("Answer")
         st.write(answer)
 
