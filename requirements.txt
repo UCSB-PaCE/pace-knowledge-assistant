@@ -1,0 +1,9 @@
+streamlit
+pymongo
+python-dotenv
+requests
+voyageai
+langchain-core
+pydantic
+pandas
+sentence-transformers

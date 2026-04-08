@@ -1,17 +1,10 @@
-import pandas as pd
-import pymongo
 from pymongo import MongoClient
-from sentence_transformers import SentenceTransformer
-import logging
 import os
-import json
-import requests
 import voyageai
-from dotenv import load_dotenv
-import time
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 from intent_agent import TicketQueryIntent
+from llm_agent import SandBoxLLM
 # Load the embedding model (https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1)
 # load_dotenv()
 
@@ -30,10 +23,14 @@ class ZohoTicket:
         # LLM SandBox API 
         self.llm_api_endpoint = os.getenv("LLMSANDBOX_API_ENDPOINT")
         self.llm_api_key = os.getenv("LLMSANDBOX_API_KEY")
-        self.headers = {
-            "x-api-key": self.llm_api_key,
-            "Content-Type": "application/json"
-        }
+        # I intentionally route all LLM Sandbox traffic through the shared client
+        # now, because I only want one implementation of the polling/rate-limit
+        # behavior in this repo. That keeps the intent agent and the chatbot from
+        # drifting into different retry strategies.
+        self.llm = SandBoxLLM(
+            llm_api_endpoint=self.llm_api_endpoint,
+            llm_api_key=self.llm_api_key,
+        )
 
         from intent_agent import IntentExtractionAgent
         self.intent_agent = IntentExtractionAgent()
@@ -121,60 +118,11 @@ class ZohoTicket:
         return emails
     
     def llm_integration_chatbot(self, prompt: str) -> str:
-        body = {"message": 
-            {"role": "user", 
-            "content": [{"contentType": "text", "body": prompt.strip()}], 
-            "model": "claude-v4.5-sonnet"}} # 4.6 sonnet
-        try:
-            r = requests.post(f"{self.llm_api_endpoint}/conversation", headers=self.headers, json=body)
-            r.raise_for_status()
-            data_res = r.json()
-            # print(data_res)
-        except requests.exceptions.HTTPError as e:
-            print(f"HTTP error: {e}")
-            print(f"Response body: {r.text}")
-            return f"API Error: {e}"
-        except Exception as e:
-            print(f"Other error: {e}")
-            return f"Error: {e}"
-        
-        conversation_id = data_res.get('conversationId')
-        if not conversation_id:
-            return "No conversationId returned from API."
-
-        url = f"{self.llm_api_endpoint}/conversation/{conversation_id}"
-        max_retries = 10
-        wait_seconds = 5
-
-        # Fetching the result immediately after posting, but the LLM hasn't finished generating yet.
-        for attempt in range(max_retries): # This is to handle Time Asychronous issue. 
-            try:
-                response = requests.get(url, headers={"x-api-key": self.llm_api_key})
-                # response.raise_for_status()
-                data_result = response.json()
-                # print(data_result)
-
-                # More robust way to get the response
-                message_keys = list(data_result['messageMap'].keys())
-                # print(message_keys)
-
-                if not message_keys:
-                    print("No messages found in conversation.")
-                    print(f"Attempt {attempt + 1}: Assistant response not ready, retrying in {wait_seconds}s...")
-                    time.sleep(wait_seconds)
-                
-                # Try to get the assistant's response (usually the last message)
-                # If there are multiple messages, get the last one (most recent)
-                # If there's only one message, that might be the user's message, so return a default
-                else:
-                    return data_result['messageMap'][message_keys[-1]]['content'][0]['body']
-            except requests.exceptions.HTTPError as e:
-                print(f"HTTP error: {e}")
-                print(f"Response body: {r.text}")
-                return f"API Error: {e}"
-            except Exception as e:
-                print(f"Other error: {e}")
-                return f"Error: {e}"
+        # I used to have a second copy of the conversation POST/GET logic here.
+        # That was a maintenance problem and a rate-limit problem, because one
+        # path could be fixed while the other still behaved badly. Now the chatbot
+        # uses the same adaptive polling client as everything else.
+        return self.llm.generate_response(prompt)
 
     
         
