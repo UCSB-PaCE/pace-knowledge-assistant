@@ -18,6 +18,8 @@ venv/
 .vscode/
 .github/
 .idea/
+.playwright-mcp/
+.playwright/
 
 # OS files
 .DS_Store
