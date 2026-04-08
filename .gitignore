@@ -1,5 +1,6 @@
 .env
 .env.*
+!.env.example
 
 # Python cache and bytecode
 __pycache__/
@@ -9,7 +10,6 @@ __pycache__/
 # Virtual environments
 .venv/
 venv/
-env/
 
 # Notebook artifacts
 .ipynb_checkpoints/
