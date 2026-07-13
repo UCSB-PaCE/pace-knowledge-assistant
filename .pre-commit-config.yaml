@@ -1,0 +1,12 @@
+# UCSB-PaCE secret-scanning pre-commit hook. Setup: pip install pre-commit && pre-commit install
+# See pace-core/STANDARDS/secret-scanning.md
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+  # Strip notebook outputs before commit (this repo tracks mongodb_RAG.ipynb).
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout

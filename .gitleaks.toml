@@ -1,0 +1,16 @@
+# Canonical gitleaks config for UCSB-PaCE repos (from pace-core/STANDARDS/templates).
+title = "UCSB-PaCE gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Template/example files and non-secret markers"
+paths = [
+  '''\.env\.example$''',
+  '''.*\.example$''',
+]
+regexes = [
+  '''\*\*\*REMOVED-[A-Z-]+\*\*\*''',
+  '''(?i)your[-_ ]?(api[-_ ]?key|token|secret|password)[-_ ]?here''',
+]
