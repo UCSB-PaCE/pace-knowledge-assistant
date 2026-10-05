@@ -16,7 +16,8 @@ venv/
 
 # Tooling and editor artifacts
 .vscode/
-.github/
+.github/*
+!.github/workflows/
 .idea/
 .playwright-mcp/
 .playwright/
