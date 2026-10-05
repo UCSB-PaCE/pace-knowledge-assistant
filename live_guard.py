@@ -15,7 +15,7 @@ ENV_PREFIXES = (
     "OPENAI_", "CLOUDFLARE_", "CF_API", "MONGO", "SLACK_",
 )
 ENV_SUFFIXES = ("_TOKEN", "_SECRET", "_REFRESH_TOKEN", "_API_KEY", "_PASSWORD", "_CLIENT_SECRET")
-ENV_EXEMPT_PREFIXES = ("GITHUB_", "ACTIONS_", "RUNNER_")
+ENV_EXEMPT_PREFIXES = ("GITHUB_", "ACTIONS_", "RUNNER_", "CLAUDE_CODE_")  # Claude Code harness vars, not service creds
 ENV_EXEMPT_NAMES = ("GH_TOKEN", "GITHUB_TOKEN")
 
 SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__"}
